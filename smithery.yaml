@@ -19,7 +19,7 @@ startCommand:
         description: Path to the Google Cloud service account credentials JSON file.
   commandFunction: |
     config => ({
-      command: 'node',
-      args: ['.smithery/index.cjs'],
+      command: 'bash',
+      args: ['-lc', 'set -e; if [ -n "$GOOGLE_CREDENTIALS_JSON_B64" ]; then echo "$GOOGLE_CREDENTIALS_JSON_B64" | base64 -d > /app/credentials.json; fi; node .smithery/index.cjs'],
       env: { GOOGLE_APPLICATION_CREDENTIALS: config.googleCredentialsPath }
     })
