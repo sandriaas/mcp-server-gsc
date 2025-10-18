@@ -20,6 +20,6 @@ startCommand:
   commandFunction: |
     config => ({
       command: 'bash',
-      args: ['-lc', 'set -e; if [ -n "$GOOGLE_CREDENTIALS_JSON_B64" ]; then echo "$GOOGLE_CREDENTIALS_JSON_B64" | base64 -d > /app/credentials.json; fi; node .smithery/index.cjs'],
+      args: ['-lc', 'set -e; node -e "if (process.env.GOOGLE_CREDENTIALS_JSON_B64) { require(\'fs\').writeFileSync(\'/app/credentials.json\', Buffer.from(process.env.GOOGLE_CREDENTIALS_JSON_B64, \'base64\')); }"; node .smithery/index.cjs'],
       env: { GOOGLE_APPLICATION_CREDENTIALS: config.googleCredentialsPath }
     })
