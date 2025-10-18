@@ -35,7 +35,7 @@ COPY package.json pnpm-lock.yaml ./
 
 # Install package manager and only production dependencies
 RUN npm install -g pnpm \
-  && pnpm install --prod
+  && pnpm install --prod --ignore-scripts
 
 # Set environment variable for Google credentials
 ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
