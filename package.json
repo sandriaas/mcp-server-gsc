@@ -5,6 +5,7 @@
   "author": "Yuexun Jiang <yuexunjiang@gmail.com>",
   "license": "MIT",
   "type": "module",
+  "module": "./src/index.ts",
   "bin": {
     "mcp-server-gsc": "dist/index.js"
   },
