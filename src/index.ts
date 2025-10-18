@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 // @ts-ignore
 import { zodToJsonSchema } from 'zod-to-json-schema';
@@ -16,28 +15,31 @@ import {
 } from './schemas.js';
 import { z } from 'zod';
 import { SearchConsoleService } from './search-console.js';
+// Stdio transport is used only when running locally via CLI; Smithery uses HTTP wrapper
+// import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 
-const server = new Server(
-  {
-    name: 'gsc-mcp-server-enhanced',
-    version: '0.2.0',
-  },
-  {
-    capabilities: {
-      resources: {},
-      tools: {},
-      prompts: {},
+export const configSchema = z.object({
+  googleCredentialsPath: z
+    .string()
+    .describe('Path to the Google Cloud service account credentials JSON file.'),
+});
+
+function buildServer(credentialsPath: string): Server {
+  const server = new Server(
+    {
+      name: 'gsc-mcp-server-enhanced',
+      version: '0.2.0',
     },
-  },
-);
+    {
+      capabilities: {
+        resources: {},
+        tools: {},
+        prompts: {},
+      },
+    },
+  );
 
-const GOOGLE_APPLICATION_CREDENTIALS = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-if (!GOOGLE_APPLICATION_CREDENTIALS) {
-  console.error('GOOGLE_APPLICATION_CREDENTIALS environment variable is required');
-  process.exit(1);
-}
-
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+  server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {
     tools: [
       {
@@ -82,15 +84,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       },
     ],
   };
-});
+  });
 
-server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     if (!request.params.arguments) {
       throw new Error('Arguments are required');
     }
 
-    const searchConsole = new SearchConsoleService(GOOGLE_APPLICATION_CREDENTIALS);
+      const searchConsole = new SearchConsoleService(credentialsPath);
 
     switch (request.params.name) {
       case 'enhanced_search_analytics': {
@@ -369,15 +371,22 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
     throw error;
   }
-});
+  });
 
-async function runServer() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error('Google Search Console MCP Server running on stdio');
+  return server;
 }
 
-runServer().catch((error) => {
-  console.error('Fatal error in main():', error);
-  process.exit(1);
-});
+export default function ({
+  config,
+}: {
+  config: z.infer<typeof configSchema>;
+}): Server {
+  const credentialsPath =
+    config?.googleCredentialsPath || process.env.GOOGLE_APPLICATION_CREDENTIALS || '';
+  if (!credentialsPath) {
+    throw new Error('GOOGLE_APPLICATION_CREDENTIALS or googleCredentialsPath is required');
+  }
+  return buildServer(credentialsPath);
+}
+
+// No autorun here; Smithery builds a Streamable HTTP wrapper around the exported server
