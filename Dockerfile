@@ -38,7 +38,7 @@ RUN npm install -g pnpm \
   && pnpm install --prod --ignore-scripts
 
 # Set environment variable for Google credentials
-ENV GOOGLE_APPLICATION_CREDENTIALS=/app/credentials.json
+ENV GOOGLE_APPLICATION_CREDENTIALS=credentials.json
 ENV PORT=3000
 
 # Define the command to run the application
