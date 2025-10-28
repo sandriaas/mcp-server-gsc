@@ -27,10 +27,10 @@ A Model Context Protocol (MCP) server providing comprehensive access to Google S
 
 ### Installing via Smithery
 
-To install Google Search Console for Claude Desktop automatically via [Smithery](https://smithery.ai/server/mcp-server-gsc):
+To install Google Search Console automatically via [Smithery](https://smithery.ai/server/mcp-server-gsc):
 
 ```bash
-npx -y @smithery/cli install mcp-server-gsc --client claude
+npx -y @smithery/cli install mcp-server-gsc
 ```
 
 ### Manual Installation
